@@ -32,7 +32,7 @@ func LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	token, err := middleware.GenerateToken(user.ID)
+	token, err := middleware.GenerateToken(user.ID, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
 		return
