@@ -28,7 +28,7 @@ func LoginHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
 		return
 	}
-	if !utils.ComparePassword(user.Password, Credentials.Password) {
+	if !utils.Comparepassword(user.Password, Credentials.Password) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
 		return
 	}
@@ -39,3 +39,5 @@ func LoginHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Login successfuly", "token": token})
 }
+
+// for more secure we can add Rate Limiting:Use middleware to limit login attempts (e.g., 5 attempts/minute)
