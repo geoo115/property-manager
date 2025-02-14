@@ -21,12 +21,12 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	var userExists models.User
-	if err := db.DB.Where("email=?", user.Email).First(&userExists).Error; err == nil {
+	if err := db.DB.Where("email = ?", user.Email).First(&userExists).Error; err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists"})
 		return
 	}
 
-	if err := db.DB.Where("username=?", user.Username).First(&userExists).Error; err != nil {
+	if err := db.DB.Where("username = ?", user.Username).First(&userExists).Error; err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
 		return
 	}
@@ -42,4 +42,6 @@ func RegisterHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating user"})
 		return
 	}
+
+	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
 }
