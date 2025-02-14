@@ -7,8 +7,8 @@ import (
 
 func UserRouter(r *gin.Engine) {
 	r.GET("users", user.GetUsers)
-	r.GET("/users/id", user.GetUserByID)
+	r.GET("/users/:id", user.GetUserByID)
 	r.POST("/users", user.CreateUser)
-	r.PUT("/users/id", user.UpdateUser)
-	r.DELETE("/users/id", user.DeleteUser)
+	r.PUT("/users/:id", user.UpdateUser)
+	r.DELETE("/users/:id", user.DeleteUser)
 }
