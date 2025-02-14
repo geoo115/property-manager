@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/router"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	db.Init()
 	r := gin.Default()
 
 	router.SetupRouter(r)
