@@ -103,19 +103,61 @@ func TestCreateUser(t *testing.T) {
 func TestGetUsers(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
+	// Ensure at least one user exists in the DB.
+	var count int64
+	db.DB.Model(&models.User{}).Count(&count)
+	if count == 0 {
+		// Create a dummy user if none exists.
+		dummyUser := models.User{
+			Username:  "dummyuser",
+			FirstName: "Dummy",
+			LastName:  "User",
+			Password:  "dummy123",
+			Email:     "dummy@example.com",
+			Role:      "tenant",
+			Phone:     "1234567890",
+		}
+		hashed, _ := utils.HashPassword(dummyUser.Password)
+		dummyUser.Password = hashed
+		if err := db.DB.Create(&dummyUser).Error; err != nil {
+			t.Fatalf("Error creating dummy user: %v", err)
+		}
+	}
+
+	// Create test context and call the handler.
 	c, w := getTestContext("GET", "/users", nil)
 	user.GetUsers(c)
 
+	// Check that we got an HTTP 200 OK status.
 	if w.Code != http.StatusOK {
 		t.Fatalf("Expected status 200, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
-	var users []models.User
-	if err := json.Unmarshal(w.Body.Bytes(), &users); err != nil {
+	// Unmarshal the response body into a map.
+	var response map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 		t.Fatalf("Error unmarshalling response: %v", err)
 	}
+
+	// Verify that the "users" key exists and is an array.
+	users, ok := response["users"].([]interface{})
+	if !ok {
+		t.Fatalf("Expected 'users' key in response to be an array, got: %v", response["users"])
+	}
+
 	if len(users) == 0 {
 		t.Error("Expected at least one user, got none")
+	}
+
+	// Optionally verify additional keys like "count", "limit", and "offset".
+	if _, exists := response["count"]; !exists {
+		t.Error("Expected 'count' key in response")
+	}
+	if _, exists := response["limit"]; !exists {
+		t.Error("Expected 'limit' key in response")
+	}
+	if _, exists := response["offset"]; !exists {
+		t.Error("Expected 'offset' key in response")
 	}
 }
 
