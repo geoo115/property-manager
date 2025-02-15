@@ -1,9 +1,11 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
 	"math/rand"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
@@ -38,18 +40,18 @@ func randomEmail(base string) string {
 func TestCreateUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
-	// Clean up any existing test user (using username or email).
-	db.DB.Where("username = ?", "testuser").Delete(&models.User{})
-	db.DB.Where("email = ?", "testuser@example.com").Delete(&models.User{})
-
+	// Step 1: Ensure unique email & phone to avoid constraint violations
+	username := randomUsername("testuser")
+	email := randomEmail(username)
 	phone := randomPhone()
 
+	// Step 2: Prepare request payload
 	payload := map[string]interface{}{
-		"username":   "testuser",
+		"username":   username,
 		"password":   "password123",
 		"first_name": "Test",
 		"last_name":  "User",
-		"email":      "testuser@example.com",
+		"email":      email,
 		"role":       "tenant",
 		"phone":      phone,
 	}
@@ -58,23 +60,42 @@ func TestCreateUser(t *testing.T) {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	c, w := getTestContext("POST", "/users", body)
-	user.CreateUser(c)
+	// Step 3: Create HTTP request (better than getTestContext)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/users", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
 
-	if w.Code != http.StatusOK && w.Code != http.StatusCreated {
-		t.Fatalf("Expected status 200/201, got %d. Body: %s", w.Code, w.Body.String())
+	// Step 4: Setup router and execute the request
+	router := gin.Default()
+	router.POST("/users", user.CreateUser) // Attach the route handler
+	router.ServeHTTP(w, req)               // Simulate the HTTP request
+
+	// Step 5: Verify response
+	if w.Code != http.StatusCreated { // Expect 201 Created
+		t.Fatalf("Expected status 201, got %d. Body: %s", w.Code, w.Body.String())
 	}
 
-	var createdUser models.User
-	if err := json.Unmarshal(w.Body.Bytes(), &createdUser); err != nil {
+	// Step 6: Verify JSON response contains user data
+	var response map[string]interface{}
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
 		t.Fatalf("Failed to unmarshal response: %v", err)
 	}
 
-	if createdUser.ID == 0 {
-		t.Errorf("Expected valid user ID, got %d", createdUser.ID)
+	// Step 7: Extract user object from response
+	userData, exists := response["user"].(map[string]interface{})
+	if !exists {
+		t.Fatalf("Response does not contain user data")
 	}
-	if createdUser.Username != payload["username"] {
-		t.Errorf("Expected username %s, got %s", payload["username"], createdUser.Username)
+
+	// Step 8: Validate response values
+	if userData["username"] != payload["username"] {
+		t.Errorf("Expected username %s, got %s", payload["username"], userData["username"])
+	}
+
+	// Step 9: Verify that the user was actually inserted in the database
+	var createdUser models.User
+	if err := db.DB.Where("username = ?", username).First(&createdUser).Error; err != nil {
+		t.Fatalf("User not found in database: %v", err)
 	}
 }
 
