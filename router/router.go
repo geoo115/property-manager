@@ -7,4 +7,5 @@ import (
 func SetupRouter(r *gin.Engine) {
 	AuthRoutes(r)
 	UserRouter(r)
+	PropertyRouter(r)
 }
