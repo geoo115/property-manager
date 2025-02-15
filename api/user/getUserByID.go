@@ -2,7 +2,6 @@ package user
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
@@ -10,12 +9,7 @@ import (
 )
 
 func GetUserByID(c *gin.Context) {
-	idstr := c.Param("id")
-	id, err := strconv.Atoi(idstr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
-	}
+	id := c.Param("id")
 
 	var user models.User
 	if err := db.DB.First(&user, id).Error; err != nil {

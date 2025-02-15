@@ -2,7 +2,6 @@ package user
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
@@ -10,12 +9,14 @@ import (
 )
 
 func DeleteUser(c *gin.Context) {
-	strid := c.Param("id")
-	id, err := strconv.Atoi(strid)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user ID"})
+	id := c.Param("id")
+
+	var user models.User
+	if err := db.DB.First(&user, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+
 	if err := db.DB.Delete(&models.User{}, id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error deleting user"})
 	}
