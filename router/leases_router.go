@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func LeaseRouter(r *gin.Engine) {
-	r.GET("/leases", lease.GetLeases)
-	r.GET("/leases/:id", lease.GetLeaseByID)
-	r.POST("/leases/", lease.CreateLease)
-	r.PUT("/leases/:id", lease.UpdateLease)
-	r.DELETE("leases/:id", lease.DeleteLease)
+func LeaseRouter(rg *gin.RouterGroup) {
+	rg.GET("/leases", lease.GetLeases)
+	rg.GET("/leases/:id", lease.GetLeaseByID)
+	rg.POST("/leases/", lease.CreateLease)
+	rg.PUT("/leases/:id", lease.UpdateLease)
+	rg.DELETE("leases/:id", lease.DeleteLease)
 }

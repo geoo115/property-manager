@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func UserRouter(r *gin.Engine) {
-	r.GET("users", user.GetUsers)
-	r.GET("/users/:id", user.GetUserByID)
-	r.POST("/users", user.CreateUser)
-	r.PUT("/users/:id", user.UpdateUser)
-	r.DELETE("/users/:id", user.DeleteUser)
+func UserRouter(rg *gin.RouterGroup) {
+	rg.GET("/users", user.GetUsers)
+	rg.GET("/users/:id", user.GetUserByID)
+	rg.POST("/users", user.CreateUser)
+	rg.PUT("/users/:id", user.UpdateUser)
+	rg.DELETE("/users/:id", user.DeleteUser)
 }

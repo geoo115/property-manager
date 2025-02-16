@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PropertyRouter(r *gin.Engine) {
-	r.GET("/properties", property.GetProperties)
-	r.GET("/properties/:id", property.GetPropertyByID)
-	r.POST("/properties", property.CreateProperty)
-	r.PUT("/properties/:id", property.UpdateProperty)
-	r.DELETE("/properties/:id", property.DeleteProperty)
+func PropertyRouter(rg *gin.RouterGroup) {
+	rg.GET("/properties", property.GetProperties)
+	rg.GET("/properties/:id", property.GetPropertyByID)
+	rg.POST("/properties", property.CreateProperty)
+	rg.PUT("/properties/:id", property.UpdateProperty)
+	rg.DELETE("/properties/:id", property.DeleteProperty)
 }
