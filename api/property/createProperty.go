@@ -57,6 +57,11 @@ func CreateProperty(c *gin.Context) {
 		return
 	}
 
+	if err := db.DB.Preload("Owner").First(&property, property.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching property owner"})
+		return
+	}
+
 	// Return response with HTTP 201 Created
 	c.JSON(http.StatusCreated, gin.H{
 		"message":  "Property created successfully",
