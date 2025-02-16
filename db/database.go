@@ -19,4 +19,7 @@ func Init() {
 	fmt.Println("Database connection successfully opened")
 
 	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.Property{})
+	DB.AutoMigrate(&models.Lease{})
+	DB.AutoMigrate(&models.Unit{})
 }
