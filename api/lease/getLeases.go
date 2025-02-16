@@ -16,6 +16,7 @@ func GetLeases(c *gin.Context) {
 	limit := 10
 	offset := 0
 
+	// Parse limit & offset
 	if l := c.Query("limit"); l != "" {
 		if parsed, err := strconv.Atoi(l); err == nil {
 			limit = parsed
@@ -27,23 +28,21 @@ func GetLeases(c *gin.Context) {
 		}
 	}
 
-	// Retrieve user role and ID from context (assuming JWT middleware sets this)
+	// Retrieve user role and ID from context
 	userRole, _ := c.Get("user_role")
-	userID, _ := c.Get("user_id") // Assuming stored as uint in context
+	userID, _ := c.Get("user_id")
 
-	query := db.DB.Model(&models.Lease{})
+	query := db.DB.Model(&models.Lease{}).Preload("Tenant").Preload("Property.Owner")
 
 	// Role-based access control
 	if userRole == "tenant" {
-		// Tenant can only access leases related to them
 		query = query.Where("tenant_id = ?", userID)
 	} else if userRole == "landlord" {
-		// Landlord can only access leases related to properties they own
 		query = query.Joins("JOIN properties ON properties.id = leases.property_id").
 			Where("properties.owner_id = ?", userID)
 	}
 
-	// Optional additional filtering
+	// Filtering
 	if propertyID := c.Query("property_id"); propertyID != "" {
 		query = query.Where("leases.property_id = ?", propertyID)
 	}

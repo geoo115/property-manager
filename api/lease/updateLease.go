@@ -32,11 +32,26 @@ func UpdateLease(c *gin.Context) {
 	}
 
 	var lease models.Lease
-	if err := db.DB.First(&lease, id).Error; err != nil {
+	if err := db.DB.Preload("Tenant").Preload("Property.Owner").
+		First(&lease, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lease not found"})
 		return
 	}
 
+	// Enforce role-based access
+	userRole, _ := c.Get("user_role")
+	userID, _ := c.Get("user_id")
+
+	if userRole == "tenant" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Tenants cannot update leases"})
+		return
+	}
+	if userRole == "landlord" && lease.Property.OwnerID != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Update lease
 	lease.TenantID = input.TenantID
 	lease.PropertyID = input.PropertyID
 	lease.StartDate = input.StartDate
@@ -46,6 +61,13 @@ func UpdateLease(c *gin.Context) {
 
 	if err := db.DB.Save(&lease).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating lease"})
+		return
+	}
+
+	// Reload with preloaded data
+	if err := db.DB.Preload("Tenant").Preload("Property.Owner").
+		First(&lease, lease.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated lease"})
 		return
 	}
 

@@ -41,6 +41,7 @@ func CreateLease(c *gin.Context) {
 		return
 	}
 
+	// Create the lease
 	lease := models.Lease{
 		TenantID:        input.TenantID,
 		PropertyID:      input.PropertyID,
@@ -55,5 +56,14 @@ func CreateLease(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, lease)
+	// Reload the lease with preloaded Tenant & Property data
+	if err := db.DB.Preload("Tenant").Preload("Property.Owner").First(&lease, lease.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching lease details"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Lease created successfully",
+		"lease":   lease,
+	})
 }

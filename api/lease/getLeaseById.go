@@ -12,21 +12,21 @@ func GetLeaseByID(c *gin.Context) {
 	id := c.Param("id")
 
 	var lease models.Lease
-	if err := db.DB.Preload("Property").Preload("Tenant").First(&lease, id).Error; err != nil {
+	if err := db.DB.Preload("Tenant").Preload("Property.Owner").
+		First(&lease, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Lease not found"})
 		return
 	}
 
 	// Retrieve user role and ID from context
 	userRole, _ := c.Get("user_role")
-	userID, _ := c.Get("user_id") // Assuming stored as uint in context
+	userID, _ := c.Get("user_id")
 
 	// Enforce role-based access
 	if userRole == "tenant" && lease.TenantID != userID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}
-
 	if userRole == "landlord" && lease.Property.OwnerID != userID {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
