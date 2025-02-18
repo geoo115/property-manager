@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -45,10 +46,15 @@ func JWTMiddleware() gin.HandlerFunc {
 				}
 			}
 
-			// Extract claims
+			// Extract claims with correct key names
 			userID, ok1 := claims["userID"].(float64)
 			role, ok2 := claims["role"].(string)
-			if !ok1 || !ok2 {
+			username, ok3 := claims["username"].(string)
+
+			// Debugging logs
+			fmt.Println("Token Decoded: userID:", userID, "Role:", role, "Username:", username)
+
+			if !ok1 || !ok2 || !ok3 {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
 				return
 			}
@@ -56,6 +62,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			// Add claims to context
 			c.Set("user_id", uint(userID))
 			c.Set("user_role", role)
+			c.Set("username", username)
 			c.Next()
 			return
 		}

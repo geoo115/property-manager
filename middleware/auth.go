@@ -19,15 +19,15 @@ func init() {
 	jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 }
 
-func GenerateToken(userID uint, role string) (string, error) {
-	// Create a new token object, specifying signing method and the claims.
+// GenerateToken creates a JWT with user information
+func GenerateToken(userID uint, username string, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"userID": userID,
-		"role":   role,
-		"exp":    time.Now().Add(1 * time.Hour).Unix(),
+		"userID":   userID,
+		"role":     role,
+		"username": username,
+		"exp":      time.Now().Add(1 * time.Hour).Unix(), // Token expires in 1 hour
 	})
 
-	// Sign and get the complete encoded token as a string using the secret.
 	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
 		return "", err
