@@ -22,4 +22,5 @@ func Init() {
 	DB.AutoMigrate(&models.Property{})
 	DB.AutoMigrate(&models.Lease{})
 	DB.AutoMigrate(&models.Unit{})
+	DB.AutoMigrate(&models.Maintenance{})
 }
