@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -37,6 +38,6 @@ func UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "error updating user"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	c.JSON(http.StatusOK, user)
 }

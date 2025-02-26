@@ -8,7 +8,8 @@ import (
 func MaintenanceRoutes(rg *gin.RouterGroup) {
 	rg.GET("/maintenances", maintenance.GetMaintenances)
 	rg.GET("/maintenance/:id", maintenance.GetMaintenance)
-	rg.POST("/maintenance", maintenance.CreateMaintenance)
+	rg.POST("/leases/:leaseID/maintenance", maintenance.CreateMaintenanceByLease)            // Tenant
+	rg.POST("/properties/:propertyID/maintenances", maintenance.CreateMaintenanceByProperty) // Admin/Landlord
 	rg.PUT("/maintenance/:id", maintenance.UpdateMaintenance)
 	rg.DELETE("/maintenance/:id", maintenance.DeleteMaintenance)
 }

@@ -8,7 +8,9 @@ import (
 func LeaseRouter(rg *gin.RouterGroup) {
 	rg.GET("/leases", lease.GetLeases)
 	rg.GET("/leases/:id", lease.GetLeaseByID)
-	rg.POST("/leases/", lease.CreateLease)
+	rg.GET("/leases/active", lease.GetActiveLeaseForTenant)
+	rg.GET("/properties/:id/lease", lease.GetLeaseForProperty)
+	rg.POST("/leases", lease.CreateLease)
 	rg.PUT("/leases/:id", lease.UpdateLease)
-	rg.DELETE("leases/:id", lease.DeleteLease)
+	rg.DELETE("/leases/:id", lease.DeleteLease)
 }

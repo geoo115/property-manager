@@ -1,6 +1,7 @@
 package property
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -57,7 +58,7 @@ func UpdateProperty(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating property"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	// Respond with the updated property
 	c.JSON(http.StatusOK, gin.H{
 		"message":  "Property updated successfully",

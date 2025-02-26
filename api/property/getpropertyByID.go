@@ -1,22 +1,33 @@
 package property
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
 	"github.com/gin-gonic/gin"
 )
 
+// GetPropertyByID fetches a property by ID with Redis caching.
 func GetPropertyByID(c *gin.Context) {
-	// Get property ID from URL parameter
 	id := c.Param("id")
+	ctx := context.Background()
+	cacheKey := "property:" + id
 
-	// Retrieve user role and ID from context
-	userRole, _ := c.Get("user_role")
-	userID, _ := c.Get("user_id")
+	// Try to get cached data from Redis
+	cachedData, err := db.RedisClient.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var property models.Property
+		if json.Unmarshal([]byte(cachedData), &property) == nil {
+			c.JSON(http.StatusOK, gin.H{"property": property, "cache": "hit"})
+			return
+		}
+	}
 
-	// Find the property
+	// Fetch from database if cache miss
 	var property models.Property
 	if err := db.DB.Preload("Units").Preload("Owner").
 		First(&property, id).Error; err != nil {
@@ -24,14 +35,9 @@ func GetPropertyByID(c *gin.Context) {
 		return
 	}
 
-	// Enforce role-based access
-	if userRole == "landlord" && property.OwnerID != userID {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
-		return
-	}
+	// Store in Redis
+	jsonData, _ := json.Marshal(property)
+	db.RedisClient.Set(ctx, cacheKey, jsonData, 10*time.Minute)
 
-	// Respond with property data
-	c.JSON(http.StatusOK, gin.H{
-		"property": property,
-	})
+	c.JSON(http.StatusOK, gin.H{"property": property, "cache": "miss"})
 }

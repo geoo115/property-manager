@@ -34,3 +34,11 @@ func GenerateToken(userID uint, username string, role string) (string, error) {
 	}
 	return tokenString, nil
 }
+
+func GenerateRefreshToken(userID uint) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID": userID,
+		"exp":    time.Now().Add(24 * time.Hour).Unix(), // Refresh token expires in 24 hours
+	})
+	return token.SignedString(jwtSecret)
+}

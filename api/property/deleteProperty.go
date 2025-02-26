@@ -1,6 +1,7 @@
 package property
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -22,7 +23,7 @@ func DeleteProperty(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting property"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	// Respond with a success message
 	c.JSON(http.StatusOK, gin.H{"message": "Property deleted successfully"})
 }

@@ -1,6 +1,9 @@
 package maintenance
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,25 +13,63 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetMaintenances fetches all maintenance requests with Redis caching.
 func GetMaintenances(c *gin.Context) {
+	ctx := context.Background()
+	cacheKey := "maintenances"
+
 	var maintenances []models.Maintenance
 	userRole, _ := c.Get("user_role")
 	userID, _ := c.Get("user_id")
 
+	// Different cache keys per role
+	if userRole == "tenant" {
+		leaseIDStr := c.Param("id")
+		if leaseIDStr == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Lease ID is required"})
+			return
+		}
+		cacheKey = fmt.Sprintf("maintenances:tenant:%d:lease:%s", userID.(uint), leaseIDStr)
+	} else if userRole == "maintenanceTeam" {
+		cacheKey = "maintenances:team"
+	} else if userRole == "admin" {
+		cacheKey = "maintenances:all"
+	}
+
+	// Try to get cached data from Redis
+	cachedData, err := db.RedisClient.Get(ctx, cacheKey).Result()
+	if err == nil {
+		if json.Unmarshal([]byte(cachedData), &maintenances) == nil {
+			c.JSON(http.StatusOK, gin.H{"maintenances": maintenances, "cache": "hit"})
+			return
+		}
+	}
+
 	query := db.DB.Model(&models.Maintenance{})
 
-	// ✅ Admins can see all maintenance requests
-	if userRole == "admin" {
-		query = query.Preload("Tenant").Preload("Property")
-	} else if userRole == "tenant" {
-		// ✅ Tenants should only see maintenance for their **active leases**
-		query = query.Joins("JOIN leases ON leases.property_id = maintenances.property_id").
-			Where("leases.tenant_id = ? AND leases.end_date > ?", userID, time.Now()).
-			Preload("Property")
-	} else if userRole == "maintenanceTeam" {
-		// ✅ Maintenance team sees all maintenance requests
-		query = query.Preload("Property").Preload("Tenant")
-	} else {
+	switch userRole {
+	case "admin":
+		query = query.Preload("Reporter").Preload("Property")
+	case "tenant":
+		leaseIDStr := c.Param("id")
+		leaseID, err := strconv.ParseUint(leaseIDStr, 10, 32)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid lease ID"})
+			return
+		}
+
+		var lease models.Lease
+		if err := db.DB.Where("id = ? AND tenant_id = ?", leaseID, userID).First(&lease).Error; err != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Lease not found or access denied"})
+			return
+		}
+
+		// Fetch all maintenance requests for the property tied to the lease
+		query = query.Where("property_id = ?", lease.PropertyID).
+			Preload("Property").Preload("Reporter")
+	case "maintenanceTeam":
+		query = query.Preload("Property").Preload("Reporter")
+	default:
 		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -38,32 +79,9 @@ func GetMaintenances(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"maintenances": maintenances})
-}
+	// Store in Redis
+	jsonData, _ := json.Marshal(maintenances)
+	db.RedisClient.Set(ctx, cacheKey, jsonData, 10*time.Minute)
 
-func GetLandlordMaintenances(c *gin.Context) {
-	propertyIDStr := c.Param("id")
-	propertyID, err := strconv.ParseUint(propertyIDStr, 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid property ID"})
-		return
-	}
-
-	userID, _ := c.Get("user_id")
-
-	var maintenances []models.Maintenance
-
-	// Verify that the landlord owns the property.
-	var property models.Property
-	if err := db.DB.Where("id = ? AND owner_id = ?", propertyID, userID).First(&property).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Property not found or you do not own this property"})
-		return
-	}
-
-	if err := db.DB.Where("property_id = ?", propertyID).Preload("Tenant").Preload("Property.Owner").Find(&maintenances).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch maintenances"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"maintenances": maintenances})
+	c.JSON(http.StatusOK, gin.H{"maintenances": maintenances, "cache": "miss"})
 }

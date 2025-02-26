@@ -1,37 +1,27 @@
 package maintenance
 
 import (
+	"context"
+	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
 	"github.com/gin-gonic/gin"
 )
 
-// UpdateMaintenance updates an existing maintenance request.
+// UpdateMaintenance updates a maintenance request and invalidates Redis caches.
 func UpdateMaintenance(c *gin.Context) {
 	id := c.Param("id")
 
 	var input struct {
-		TenantID    uint   `json:"tenant_id" binding:"required"`
-		PropertyID  uint   `json:"property_id" binding:"required"`
-		Description string `json:"description" binding:"required"`
-		RequestedAt string `json:"requested_at" binding:"required"`
-		Status      string `json:"status" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid maintenance data", "details": err.Error()})
-		return
+		Description *string `json:"description"`
+		PropertyID  *uint   `json:"property_id"`
+		Status      *string `json:"status"`
 	}
 
-	// Parse the RequestedAt string into a time.Time
-	parsedTime, err := time.Parse("2006-01-02 15:04:05-07:00", input.RequestedAt)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error":   "Invalid requested_at format",
-			"details": "Expected format: 'YYYY-MM-DD HH:MM:SS+ZZ:ZZ' (e.g., '2025-02-18 00:00:00+00:00')",
-		})
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid maintenance data", "details": err.Error()})
 		return
 	}
 
@@ -41,27 +31,44 @@ func UpdateMaintenance(c *gin.Context) {
 		return
 	}
 
-	// Update fields
-	maintenance.TenantID = input.TenantID
-	maintenance.PropertyID = input.PropertyID
-	maintenance.Description = input.Description
-	maintenance.RequestedAt = parsedTime
-	maintenance.Status = input.Status
+	// Update only provided fields
+	if input.Description != nil {
+		maintenance.Description = *input.Description
+	}
+	if input.PropertyID != nil {
+		maintenance.PropertyID = *input.PropertyID
+	}
+	if input.Status != nil {
+		maintenance.Status = *input.Status
+	}
 
 	if err := db.DB.Save(&maintenance).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error updating maintenance request"})
 		return
 	}
 
-	// Reload with preloaded associations.
-	if err := db.DB.Preload("Tenant").Preload("Property.Owner").
-		First(&maintenance, maintenance.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated maintenance details"})
+	// Reload with associations
+	if err := db.DB.Preload("Reporter").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated details"})
 		return
 	}
 
+	// Invalidate Redis caches
+	ctx := context.Background()
+	cacheKeys := []string{
+		"maintenances:all",
+		"maintenances:team",
+		fmt.Sprintf("maintenance:%s", id),
+		// Additional invalidation based on role/property could be added if tracked
+	}
+	for _, key := range cacheKeys {
+		if err := db.RedisClient.Del(ctx, key).Err(); err != nil {
+			fmt.Printf("Failed to delete Redis key %s: %v\n", key, err)
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Maintenance request updated successfully",
+		"message":     "Maintenance updated successfully",
 		"maintenance": maintenance,
 	})
 }

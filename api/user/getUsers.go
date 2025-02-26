@@ -1,62 +1,51 @@
 package user
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
-	"strconv"
+	"time"
 
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
 	"github.com/gin-gonic/gin"
 )
 
+// GetUsers fetches all users with Redis caching.
 func GetUsers(c *gin.Context) {
+	ctx := context.Background()
+	cacheKey := "users"
+
+	// Try to get cached data from Redis
+	cachedData, err := db.RedisClient.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var users []models.User
+		if json.Unmarshal([]byte(cachedData), &users) == nil {
+			c.JSON(http.StatusOK, gin.H{"users": users, "cache": "hit"})
+			return
+		}
+	}
+
 	var users []models.User
-	var responseUsers []gin.H
-
-	// Pagination: Get limit & offset from query parameters (default limit 10)
-	limit := 10
-	offset := 0
-
-	if l := c.Query("limit"); l != "" {
-		limit, _ = strconv.Atoi(l)
-	}
-	if o := c.Query("offset"); o != "" {
-		offset, _ = strconv.Atoi(o)
-	}
-
-	// Filtering: Get role from query parameters
-	query := db.DB.Model(&models.User{})
-	if role := c.Query("role"); role != "" {
-		query = query.Where("role = ?", role)
-	}
-
-	// Sorting: Allow sorting by "username" or "created_at"
-	sortBy := c.DefaultQuery("sort_by", "created_at") // Default: Sort by created_at
-	order := c.DefaultQuery("order", "desc")          // Default: Descending order
-
-	if err := query.Order(sortBy + " " + order).Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+	if err := db.DB.Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching users"})
 		return
 	}
 
-	// Remove sensitive data (passwords) before sending response
-	for _, user := range users {
-		responseUsers = append(responseUsers, gin.H{
-			"id":         user.ID,
-			"username":   user.Username,
-			"first_name": user.FirstName,
-			"last_name":  user.LastName,
-			"email":      user.Email,
-			"role":       user.Role,
-			"phone":      user.Phone,
-			"created_at": user.CreatedAt,
-		})
+	// Store in Redis
+	jsonData, _ := json.Marshal(users)
+	db.RedisClient.Set(ctx, cacheKey, jsonData, 10*time.Minute)
+
+	c.JSON(http.StatusOK, gin.H{"users": users, "cache": "miss"})
+}
+
+func GetActiveUsers(c *gin.Context) {
+	var users []models.User
+	err := db.DB.Where("role = ?", "tenant").Find(&users).Error
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching users"})
+		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"users":  responseUsers,
-		"count":  len(responseUsers),
-		"limit":  limit,
-		"offset": offset,
-	})
+	c.JSON(http.StatusOK, gin.H{"users": users})
 }

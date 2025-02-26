@@ -1,6 +1,7 @@
 package property
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -61,7 +62,7 @@ func CreateProperty(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching property owner"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	// Return response with HTTP 201 Created
 	c.JSON(http.StatusCreated, gin.H{
 		"message":  "Property created successfully",

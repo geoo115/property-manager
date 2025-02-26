@@ -1,6 +1,7 @@
 package lease
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -11,12 +12,12 @@ import (
 
 func CreateLease(c *gin.Context) {
 	var input struct {
-		TenantID        uint      `json:"tenant_id" binding:"required"`
-		PropertyID      uint      `json:"property_id" binding:"required"`
-		StartDate       time.Time `json:"start_date" binding:"required"`
-		EndDate         time.Time `json:"end_date" binding:"required"`
-		MonthlyRent     float64   `json:"monthly_rent" binding:"required,gte=0"`
-		SecurityDeposit float64   `json:"security_deposit" binding:"required,gte=0"`
+		TenantID        uint    `json:"tenant_id" binding:"required"`
+		PropertyID      uint    `json:"property_id" binding:"required"`
+		StartDate       string  `json:"start_date" binding:"required"`
+		EndDate         string  `json:"end_date" binding:"required"`
+		MonthlyRent     float64 `json:"monthly_rent" binding:"required,gte=0"`
+		SecurityDeposit float64 `json:"security_deposit" binding:"required,gte=0"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -24,8 +25,16 @@ func CreateLease(c *gin.Context) {
 		return
 	}
 
-	if !input.EndDate.After(input.StartDate) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "EndDate must be after StartDate"})
+	layout := "2006-01-02T15:04:05.000Z"
+	startDate, err := time.Parse(layout, input.StartDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start_date format"})
+		return
+	}
+
+	endDate, err := time.Parse(layout, input.EndDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid end_date format"})
 		return
 	}
 
@@ -45,8 +54,8 @@ func CreateLease(c *gin.Context) {
 	lease := models.Lease{
 		TenantID:        input.TenantID,
 		PropertyID:      input.PropertyID,
-		StartDate:       input.StartDate,
-		EndDate:         input.EndDate,
+		StartDate:       startDate,
+		EndDate:         endDate,
 		MonthlyRent:     input.MonthlyRent,
 		SecurityDeposit: input.SecurityDeposit,
 	}
@@ -61,7 +70,7 @@ func CreateLease(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching lease details"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Lease created successfully",
 		"lease":   lease,

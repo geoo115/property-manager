@@ -1,6 +1,7 @@
 package lease
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -70,7 +71,7 @@ func UpdateLease(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated lease"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Lease updated successfully",
 		"lease":   lease,

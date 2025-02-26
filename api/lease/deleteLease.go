@@ -1,6 +1,7 @@
 package lease
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -21,6 +22,6 @@ func DeleteLease(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error deleting lease"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	c.JSON(http.StatusOK, gin.H{"message": "Lease deleted successfully"})
 }

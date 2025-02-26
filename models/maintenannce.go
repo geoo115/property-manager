@@ -4,7 +4,7 @@ import "time"
 
 type Maintenance struct {
 	ID          uint      `json:"id" gorm:"primaryKey"`
-	TenantID    uint      `json:"tenant_id"`
+	ReporterID  uint      `json:"reporter_id"` // Previously TenantID
 	PropertyID  uint      `json:"property_id"`
 	Description string    `json:"description"`
 	RequestedAt time.Time `json:"requested_at"`
@@ -12,6 +12,6 @@ type Maintenance struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 
-	Tenant   User     `json:"tenant" gorm:"foreignKey:TenantID;constraint:OnDelete:CASCADE;"`
+	Reporter User     `json:"reporter" gorm:"foreignKey:ReporterID;constraint:OnDelete:CASCADE;"`
 	Property Property `json:"property" gorm:"foreignKey:PropertyID;constraint:OnDelete:CASCADE;"`
 }

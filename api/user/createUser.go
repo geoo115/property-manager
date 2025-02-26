@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/geoo115/property-manager/db"
@@ -49,7 +50,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error creating user"})
 		return
 	}
-
+	db.RedisClient.FlushDB(context.Background())
 	// Send response (omit password for security)
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User created successfully",
