@@ -465,7 +465,7 @@ The PMS roadmap includes several planned enhancements:
 - GitHub Repository: github.com/geoo115/property-manager
 - Issue Tracker: Create issues for bugs or feature requests
 - Documentation Wiki: Additional detailed documentation (future)
-- Contact: For direct support, contact geoo115@example.com
+- Contact: For direct support, contact geoo115@gmail.com
 
 ### Contributing
 Contributions to the PMS are welcome! Please:
