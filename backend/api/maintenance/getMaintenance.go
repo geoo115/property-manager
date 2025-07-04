@@ -29,7 +29,7 @@ func GetMaintenance(c *gin.Context) {
 
 	// Fetch from database
 	var maintenance models.Maintenance
-	if err := db.DB.Preload("Reporter").Preload("Property.Owner").
+	if err := db.DB.Preload("RequestedBy").Preload("Property.Owner").
 		First(&maintenance, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Maintenance not found"})
 		return

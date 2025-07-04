@@ -1,478 +1,684 @@
-# Property Management System (PMS) Documentation
+# Property Management System (PMS)
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [User Roles](#user-roles)
-3. [Technical Architecture](#technical-architecture)
-4. [API Reference](#api-reference)
-5. [Security Features](#security-features)
-6. [Installation and Setup](#installation-and-setup)
-7. [Getting Started Guide](#getting-started-guide)
-8. [Advanced Features](#advanced-features)
-9. [Future Enhancements](#future-enhancements)
-10. [Support and Resources](#support-and-resources)
+## 🏠 Overview
+A comprehensive full-stack property management system built with Go backend and React frontend. This system provides complete property, tenant, lease, maintenance, and accounting management with role-based access control.
 
-## Introduction
+## ✨ Features
 
-The Property Management System (PMS) is a comprehensive RESTful API designed to streamline property management operations. This system provides a robust solution for managing rental properties, leases, maintenance requests, and accounting tasks.
+### Core Features
+- **User Management**: Admin, landlord, tenant, and maintenance team roles
+- **Property Management**: Create, read, update, and delete properties
+- **Lease Management**: Handle lease agreements and tenant-property relationships
+- **Maintenance Tracking**: Request, assign, and track maintenance tasks
+- **Accounting System**: Invoice generation and expense tracking
+- **Authentication**: JWT-based authentication with role-based access control
+- **Dashboard**: Real-time analytics and KPIs for different user roles
+- **Modern UI/UX**: Responsive design with modern components and navigation
 
-### Core Functionality
+### Role-Based Access Control
+- **Admin**: Full system access, user management, system-wide reports
+- **Landlord**: Property management, tenant relations, financial tracking
+- **Tenant**: View personal information, submit maintenance requests
+- **Maintenance Team**: View and update maintenance requests
 
-- **User Management**: Role-based user operations with secure authentication
-- **Property Management**: Complete lifecycle management for rental properties
-- **Lease Administration**: Digital lease creation and management
-- **Maintenance Request Handling**: Event-driven workflow for maintenance issues
-- **Financial Operations**: Invoice and expense tracking with role-appropriate access
+## 🛠 Technology Stack
 
-### Technology Stack
+### Backend
+- **Language**: Go 1.24
+- **Framework**: Gin (HTTP web framework)
+- **Database**: PostgreSQL with GORM ORM
+- **Cache**: Redis v8
+- **Authentication**: JWT tokens (golang-jwt/jwt/v4)
+- **Message Queue**: Apache Kafka (segmentio/kafka-go)
+- **Logging**: Sirupsen Logrus with Lumberjack rotation
+- **Configuration**: Godotenv for environment variables
+- **Security**: Bcrypt for password hashing
+- **CORS**: Gin-contrib/cors middleware
+- **Testing**: Go testing framework
 
-- **Backend**: Go, Gin framework
-- **Database**: SQLite with GORM
-- **Caching**: Redis
-- **Messaging**: Apache Kafka
-- **Authentication**: JWT (JSON Web Tokens)
+### Frontend
+- **Framework**: React 18
+- **Routing**: React Router DOM v7
+- **HTTP Client**: Axios
+- **UI Components**: Custom modern components
+- **State Management**: React Context API
+- **Styling**: CSS3 with modern design system
+- **Authentication**: JWT with automatic refresh
+- **Notifications**: React Toastify
+- **Testing**: React Testing Library
+- **Prop Validation**: PropTypes
 
-## User Roles
+## 📁 Project Structure
 
-The PMS implements role-based access control with four distinct user types:
-
-### Admin
-- Full system access with unrestricted capabilities
-- User, property, lease, and accounting management
-- System-wide configuration and monitoring
-
-### Landlord
-- Management of owned properties
-- Lease creation and oversight
-- Maintenance request initiation and tracking
-- Financial record access (invoices and expenses)
-
-### Tenant
-- Lease viewing and management
-- Maintenance request submission
-- Invoice access
-
-### Maintenance Team
-- Maintenance request updates
-- Property and user information access
-- Task management and reporting
-
-## Technical Architecture
-
-The PMS implements a layered architecture designed for modularity, maintainability, and scalability:
-
-### Web Layer
-- Built with Gin framework
-- RESTful API endpoints with efficient routing
-- Middleware support for authentication, RBAC, and rate limiting
-
-### Database Layer
-- SQLite database accessed via GORM
-- Structured data models for properties, leases, maintenance requests, and accounting
-- Transactional operations ensuring data integrity
-
-### Caching Layer
-- Redis implementation for performance optimization
-- 10-minute TTL balancing freshness and performance
-- Automatic cache invalidation on write operations
-
-### Messaging Layer
-- Apache Kafka for event-driven architecture
-- Asynchronous processing of maintenance requests
-- Decoupled communication between system components
-
-### Security Layer
-- JWT-based authentication
-- Role-based access control (RBAC)
-- Rate limiting to prevent abuse
-
-## API Reference
-
-### Authentication Endpoints
-
-| Method | Endpoint | Description | Sample Request |
-|--------|----------|-------------|----------------|
-| POST | /login | Authenticate user | `{"username": "john_doe", "password": "securepassword123"}` |
-| POST | /register | Register new user | `{"username": "john_doe", "password": "securepassword123", "email": "john@example.com", "role": "tenant"}` |
-| POST | /refresh | Refresh access token | - |
-| POST | /logout | Invalidate JWT token | - |
-
-### Role-Specific Endpoints
-
-#### Admin Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /admin/users | List all users |
-| GET | /admin/users/:id | Get user by ID |
-| POST | /admin/users | Create a new user |
-| PUT | /admin/users/:id | Update user |
-| DELETE | /admin/users/:id | Delete user |
-| GET | /admin/properties | List all properties |
-| GET | /admin/properties/:id | Get property by ID |
-| POST | /admin/properties | Create a property |
-| PUT | /admin/properties/:id | Update property |
-| DELETE | /admin/properties/:id | Delete property |
-| GET | /admin/leases | List all leases |
-| GET | /admin/leases/:id | Get lease by ID |
-| POST | /admin/leases | Create a lease |
-| PUT | /admin/leases/:id | Update lease |
-| DELETE | /admin/leases/:id | Delete lease |
-| GET | /admin/maintenances | List all maintenance requests |
-| GET | /admin/maintenance/:id | Get maintenance request by ID |
-| POST | /admin/properties/:propertyID/maintenances | Create maintenance request |
-| PUT | /admin/maintenance/:id | Update maintenance request |
-| DELETE | /admin/maintenance/:id | Delete maintenance request |
-| GET | /admin/accounting/invoices | List all invoices |
-| POST | /admin/accounting/invoices | Create invoice |
-| PUT | /admin/accounting/invoices/:id | Update invoice |
-| DELETE | /admin/accounting/invoices/:id | Delete invoice |
-| GET | /admin/accounting/expenses | List all expenses |
-| POST | /admin/accounting/expense | Create expense |
-| PUT | /admin/accounting/expense/:id | Update expense |
-| DELETE | /admin/accounting/expense/:id | Delete expense |
-
-#### Landlord Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /landlord/properties | List owned properties |
-| GET | /landlord/properties/:id | Get owned property by ID |
-| POST | /landlord/properties | Create a property |
-| PUT | /landlord/properties/:id | Update owned property |
-| DELETE | /landlord/properties/:id | Delete owned property |
-| GET | /landlord/leases | List leases for owned properties |
-| GET | /landlord/leases/:id | Get lease by ID for owned property |
-| POST | /landlord/leases | Create a lease for owned property |
-| GET | /landlord/properties/:id/maintenances | List maintenance requests for property |
-| POST | /landlord/properties/:id/maintenances | Create maintenance request |
-| GET | /landlord/invoices | List invoices for owned properties |
-| GET | /landlord/expenses | List expenses for owned properties |
-| POST | /landlord/expenses | Create expense for owned property |
-
-#### Tenant Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /tenant/leases | List tenant's leases |
-| GET | /tenant/leases/:id | Get lease by ID |
-| GET | /tenant/leases/active | Get active lease |
-| GET | /tenant/leases/:id/maintenance | List maintenance requests for lease |
-| POST | /tenant/leases/:id/maintenance | Create maintenance request |
-| GET | /tenant/invoices | List tenant's invoices |
-
-#### Maintenance Team Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | /maintenanceTeam/maintenances | List all maintenance requests |
-| GET | /maintenanceTeam/maintenance/:id | Get maintenance request by ID |
-| PUT | /maintenanceTeam/maintenance/:id | Update maintenance request |
-| GET | /maintenanceTeam/users | List all users |
-| GET | /maintenanceTeam/properties | List all properties |
-
-### Sample Request Payloads
-
-#### User Registration
-```json
-{
-  "username": "john_doe",
-  "first_name": "John",
-  "last_name": "Doe",
-  "password": "securepassword123",
-  "email": "john@example.com",
-  "role": "tenant",
-  "phone": "+1-555-123-4567"
-}
+```
+property-manager/
+├── backend/                    # Go backend application
+│   ├── api/                   # HTTP handlers organized by domain
+│   │   ├── accounting/        # Invoice and expense handlers
+│   │   ├── auth/             # Authentication handlers
+│   │   ├── dashboard/        # Dashboard and analytics handlers
+│   │   ├── lease/            # Lease management handlers
+│   │   ├── maintenance/      # Maintenance request handlers
+│   │   ├── property/         # Property management handlers
+│   │   └── user/             # User management handlers
+│   ├── cmd/                  # Application entry points
+│   ├── config/               # Configuration management
+│   ├── db/                   # Database connections
+│   ├── middleware/           # HTTP middleware
+│   ├── models/               # Data models
+│   ├── router/               # HTTP routing
+│   └── tests/                # Test files
+├── frontend/                  # React frontend application
+│   ├── public/               # Static assets
+│   ├── src/
+│   │   ├── api/              # API service layer
+│   │   ├── components/       # Reusable UI components
+│   │   │   ├── common/       # Common components (Button, DataTable, etc.)
+│   │   │   └── layout/       # Layout components (Header, Sidebar, etc.)
+│   │   ├── constants/        # Application constants and routes
+│   │   ├── context/          # React Context providers
+│   │   ├── hooks/            # Custom React hooks
+│   │   ├── pages/            # Page components
+│   │   └── utils/            # Utility functions
+│   ├── package.json          # Dependencies and scripts
+│   └── README.md             # Frontend-specific documentation
+└── docs/                     # Project documentation
 ```
 
-#### Property Creation
-```json
-{
-  "name": "Downtown Apartment",
-  "address": "123 Main St",
-  "city": "New York",
-  "price": 2000.00,
-  "owner_id": 1,
-  "available": true,
-  "bedrooms": 2,
-  "bathrooms": 1,
-  "square_feet": 850,
-  "post_code": "10001"
-}
-```
-
-#### Lease Creation
-```json
-{
-  "property_id": 1,
-  "tenant_id": 2,
-  "start_date": "2023-01-01",
-  "end_date": "2024-01-01",
-  "monthly_rent": 1500,
-  "security_deposit": 3000
-}
-```
-
-#### Maintenance Request
-```json
-{
-  "description": "Fix leaky faucet in master bathroom"
-}
-```
-
-#### Invoice Creation
-```json
-{
-  "tenant_id": 2,
-  "property_id": 1,
-  "amount": 1500.00,
-  "paid_amount": 0.00,
-  "invoice_date": "2023-01-01",
-  "due_date": "2023-02-01",
-  "category": "rent",
-  "payment_status": "unpaid"
-}
-```
-
-#### Expense Recording
-```json
-{
-  "property_id": 1,
-  "description": "Plumbing repair",
-  "category": "maintenance",
-  "amount": 200.00,
-  "expense_date": "2023-02-15"
-}
-```
-
-## Security Features
-
-### Authentication and Authorization
-
-The PMS implements a robust security model using:
-
-- **JWT Authentication**: JSON Web Tokens secure all protected endpoints
-  - Access tokens valid for 1 hour
-  - Refresh tokens valid for 24 hours
-  - Tokens delivered via HTTP-only cookies
-
-- **Role-Based Access Control (RBAC)**: Middleware enforces role-specific permissions
-  - Role verification at request time
-  - Resource ownership validation
-  - Route-based access restrictions
-
-### Additional Security Measures
-
-- Password hashing using industry-standard algorithms
-- HTTPS transport (assumed in production)
-- No sensitive data in URL parameters
-- Input validation and sanitization
-- Rate limiting protection
-
-### Rate Limiting
-
-Protection against abuse through Redis-based rate limiting:
-
-- API Endpoints: 100 requests per minute per IP
-- Authentication Endpoints: 5 requests per minute per IP
-- Implementation: Middleware integration with configurable limits
-
-### Error Handling
-
-The system implements consistent error handling throughout:
-
-**HTTP Status Codes**
-- 401 Unauthorized: Authentication issues
-- 403 Forbidden: Authorization failures
-- 404 Not Found: Resource does not exist
-- 400 Bad Request: Invalid input data
-- 429 Too Many Requests: Rate limit exceeded
-- 500 Internal Server Error: Server-side failures
-
-**Error Response Format**
-```json
-{
-  "error": "Access denied",
-  "details": "Required role: admin"
-}
-```
-
-## Installation and Setup
+## 🚀 Installation and Setup
 
 ### Prerequisites
+- Go 1.24 or later
+- Node.js 16 or later
+- PostgreSQL 12 or later
+- Redis 6 or later
+- Apache Kafka (optional, for events)
 
-Before installing the PMS, ensure you have the following:
-
-- Go 1.20 or higher
-- Docker for container management
-- Git for repository access
-
-### Installation Steps
-
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/geoo115/property-manager.git
-   cd property-manager
-   ```
-
-2. **Start Dependencies with Docker**
-   ```bash
-   docker compose up -d
-   ```
-   This configures:
-   - Redis for caching
-   - Kafka for event messaging
-
-3. **Configure Environment Variables**
-   Create a `.env` file in the root directory:
-   ```
-   JWT_SECRET=your_jwt_secret_here
-   KAFKA_BROKER=localhost:9092
-   REDIS_ADDR=localhost:6379
-   ```
-
-4. **Run the Application**
-   ```bash
-   go run main.go
-   ```
-   The server starts on port 8080 by default.
-
-### Verification
-
-Verify your installation by checking:
-
-- Redis container status: `docker ps | grep redis`
-- Kafka container status: `docker ps | grep kafka`
-- API accessibility: `curl http://localhost:8080/health` (returns 200 OK)
-
-## Getting Started Guide
-
-Follow these steps to quickly start using the PMS:
-
-1. **Register a Landlord Account**
-   ```bash
-   curl -X POST http://localhost:8080/register \
-     -H "Content-Type: application/json" \
-     -d '{"username": "landlord1", "password": "pass123", "email": "landlord@example.com", "role": "landlord"}'
-   ```
-
-2. **Log In to Get JWT Token**
-   ```bash
-   curl -X POST http://localhost:8080/login \
-     -H "Content-Type: application/json" \
-     -d '{"username": "landlord1", "password": "pass123"}'
-   ```
-
-3. **Create a Property**
-   ```bash
-   curl -X POST http://localhost:8080/landlord/properties \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <your_token>" \
-     -d '{"name": "Downtown Apt", "address": "123 Main St", "price": 2000.00, "owner_id": 1, "available": true}'
-   ```
-
-4. **Create a Lease**
-   ```bash
-   curl -X POST http://localhost:8080/landlord/leases \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <your_token>" \
-     -d '{"property_id": 1, "tenant_id": 2, "start_date": "2023-01-01", "end_date": "2024-01-01", "monthly_rent": 1500}'
-   ```
-
-5. **Submit a Maintenance Request**
-   ```bash
-   curl -X POST http://localhost:8080/tenant/leases/1/maintenance \
-     -H "Content-Type: application/json" \
-     -H "Authorization: Bearer <tenant_token>" \
-     -d '{"description": "Fix leaky faucet"}'
-   ```
-
-## Advanced Features
-
-### Caching Strategy
-
-The caching implementation optimizes performance while maintaining data freshness:
-
-**Redis Configuration**
-- TTL: 10-minute expiration for cached items
-- Key Patterns:
-  - Properties: "properties:<id>"
-  - Leases: "leases:<id>"
-  - Users: "users:<id>"
-  - Maintenance Requests: Role-specific keys (e.g., "maintenances:tenant:<user_id>:lease:<lease_id>")
-
-**Cache Invalidation**
-- Automatic on write operations (create/update/delete)
-- Implemented via Redis DEL commands
-- Ensures data consistency across the system
-
-### Event-Driven Architecture
-
-The PMS leverages Kafka for asynchronous, event-driven processing:
-
-**Maintenance Request Workflow**
-1. Request created via API endpoint
-2. Event published to maintenance-requests Kafka topic
-3. Consumer processes event, performing:
-   - Notification to maintenance team
-   - Status updates
-   - Audit logging
-
-**Message Format**
-```json
-{
-  "id": 45,
-  "property_id": 12,
-  "description": "Broken faucet",
-  "status": "pending",
-  "requested_at": "2025-02-25T21:00:00Z"
-}
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/geoo115/property-manager.git
+cd property-manager
 ```
 
-## Future Enhancements
+### Step 2: Backend Setup
 
-The PMS roadmap includes several planned enhancements:
+#### Install Dependencies
+```bash
+cd backend
+go mod download
+```
 
-### Payment Processing Integration
-- Payment gateway support for rent collection
-- Automatic receipt generation
-- Payment status tracking
+#### Environment Configuration
+Create a `.env` file in the backend directory:
 
-### Notification System
-- Email notifications for critical events
-- SMS alerts for maintenance updates
-- Push notifications via mobile app
+```env
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your_password
+DB_NAME=property_management_db
 
-### Document Management
-- PDF generation for leases and invoices
-- Document storage and retrieval
-- Signature integration for lease signing
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 
-### Analytics Dashboard
-- Property performance metrics
-- Maintenance history analytics
-- Financial reporting and forecasting
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRY=24h
+REFRESH_TOKEN_EXPIRY=168h
 
-### Mobile Application
-- Native mobile apps for iOS and Android
-- Responsive web interface
-- Offline capability for key features
+# Server Configuration
+PORT=8080
+APP_ENV=development
 
-## Support and Resources
+# Kafka Configuration (optional)
+KAFKA_BROKERS=localhost:9092
+KAFKA_TOPIC_MAINTENANCE=maintenance-requests
+KAFKA_TOPIC_INVOICES=invoice-notifications
+```
 
-### Community and Assistance
-- GitHub Repository: github.com/geoo115/property-manager
-- Issue Tracker: Create issues for bugs or feature requests
-- Documentation Wiki: Additional detailed documentation (future)
-- Contact: For direct support, contact geoo115@gmail.com
+#### Database Setup
+1. Create the PostgreSQL database:
+```sql
+CREATE DATABASE property_management_db;
+```
 
-### Contributing
-Contributions to the PMS are welcome! Please:
-- Fork the repository
-- Create a feature branch
-- Submit a pull request with detailed description
-- Follow the project's coding standards
+2. Run the database migrations (auto-migrated on startup):
+```bash
+go run cmd/main.go
+```
 
-### License
-This project is licensed under the MIT License. See the LICENSE file for details.
+3. Seed the database with initial data:
+```bash
+go run scripts/comprehensive_seed.go
+```
+
+#### Start the Backend
+```bash
+go run cmd/main.go
+```
+
+The API will be available at `http://localhost:8080`
+
+### Step 3: Frontend Setup
+
+#### Install Dependencies
+```bash
+cd frontend
+npm install
+```
+
+#### Environment Configuration (Optional)
+Create a `.env` file in the frontend directory:
+
+```env
+REACT_APP_API_URL=http://localhost:8080
+REACT_APP_ENV=development
+```
+
+#### Start the Frontend
+```bash
+npm start
+```
+
+The frontend will be available at `http://localhost:3000`
+
+## 🎨 Frontend Architecture
+
+### Component Structure
+
+#### Layout Components
+- **AppLayout**: Main application wrapper with sidebar and header
+- **Sidebar**: Navigation menu with role-based menu items
+- **Header**: Top navigation with user info and logout functionality
+
+#### Common Components
+- **Button**: Reusable button component with multiple variants
+- **DataTable**: Advanced table with sorting, filtering, and pagination
+- **FormField**: Consistent form input component with validation
+- **LoadingSpinner**: Loading states for async operations
+- **Alert**: Notification and alert component
+
+#### Page Components
+- **Dashboard**: Role-specific dashboard with KPIs and quick actions
+- **Properties**: Property management with CRUD operations
+- **Leases**: Lease management and tenant relations
+- **Users**: User management (admin only)
+- **Maintenance**: Maintenance request tracking
+- **Invoices**: Invoice management and generation
+- **Expenses**: Expense tracking and reporting
+
+### Routing Structure
+
+#### Public Routes
+- `/login` - User authentication
+- `/register` - User registration
+
+#### Protected Routes (Role-based)
+- **Admin Routes**:
+  - `/admin/dashboard` - Admin dashboard
+  - `/admin/properties` - All properties management
+  - `/admin/leases` - All leases management
+  - `/admin/users` - User management
+  - `/admin/maintenances` - All maintenance requests
+  - `/admin/accounting/invoices` - All invoices
+  - `/admin/accounting/expenses` - All expenses
+
+- **Landlord Routes**:
+  - `/landlord/properties` - Landlord's properties
+  - `/landlord/leases` - Landlord's leases
+  - `/accounting/invoices` - Landlord's invoices
+  - `/accounting/expenses` - Landlord's expenses
+
+- **Tenant Routes**:
+  - `/tenant/leases` - Tenant's leases
+  - `/tenant/maintenance` - Tenant's maintenance requests
+
+- **Maintenance Team Routes**:
+  - `/maintenanceTeam/maintenances` - Assigned maintenance requests
+
+### UI/UX Features
+
+#### Modern Design System
+- **Color Palette**: Professional blue and gray theme
+- **Typography**: Clean, readable font hierarchy
+- **Spacing**: Consistent spacing using CSS custom properties
+- **Responsive Design**: Mobile-first approach with breakpoints
+- **Accessibility**: WCAG 2.1 compliant components
+
+#### Interactive Features
+- **Real-time Updates**: Automatic data refresh for critical information
+- **Form Validation**: Client-side validation with error messages
+- **Loading States**: Skeleton screens and spinners
+- **Toast Notifications**: Success, error, and info messages
+- **Confirmation Dialogs**: Destructive action confirmations
+
+#### Navigation
+- **Sidebar Navigation**: Collapsible sidebar with role-based menu items
+- **Breadcrumbs**: Context-aware navigation breadcrumbs
+- **Quick Actions**: Dashboard shortcuts for common tasks
+- **Search Functionality**: Global search across entities
+
+## 🔐 Authentication & Security
+
+### Frontend Authentication Flow
+1. **Login Process**: User credentials sent to `/login` endpoint
+2. **Token Storage**: JWT tokens stored in localStorage
+3. **Auto-refresh**: Automatic token refresh before expiration
+4. **Route Protection**: Protected routes based on user roles
+5. **Logout**: Secure token cleanup and redirect
+
+### Security Features
+- **JWT Token Management**: Automatic refresh and secure storage
+- **Role-based Route Protection**: Component-level access control
+- **Input Validation**: Client-side validation with backend verification
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **XSS Prevention**: Sanitized user inputs and outputs
+
+## 📊 Dashboard Features
+
+### Admin Dashboard
+- **System Overview**: Total users, properties, active leases
+- **Financial Metrics**: Monthly revenue, outstanding invoices
+- **Maintenance Status**: Open, in-progress, completed requests
+- **Recent Activity**: Latest system activities and notifications
+- **Quick Actions**: Direct access to common admin tasks
+
+### Landlord Dashboard
+- **Property Portfolio**: Property count, occupancy rates
+- **Financial Performance**: Rental income, expenses, profit margins
+- **Maintenance Overview**: Property maintenance status
+- **Tenant Information**: Active tenants, lease expirations
+- **Quick Actions**: Add property, create lease, view reports
+
+### Tenant Dashboard
+- **Lease Information**: Current lease details, payment history
+- **Maintenance Requests**: Submit and track maintenance requests
+- **Payment Status**: Outstanding invoices, payment history
+- **Property Details**: Current residence information
+- **Quick Actions**: Submit maintenance, view lease, contact landlord
+
+### Maintenance Team Dashboard
+- **Work Queue**: Assigned maintenance requests by priority
+- **Completion Status**: Daily, weekly, monthly completion rates
+- **Priority Distribution**: High, medium, low priority requests
+- **Performance Metrics**: Response times, completion rates
+- **Quick Actions**: Update status, add notes, schedule work
+
+## 📱 Frontend Components
+
+### Button Component
+```jsx
+// Usage examples
+<Button variant="primary" size="medium" onClick={handleClick}>
+  Primary Action
+</Button>
+
+<Button variant="secondary" size="small" disabled>
+  Secondary Action
+</Button>
+
+<Button variant="danger" size="large" icon="trash">
+  Delete Item
+</Button>
+```
+
+### DataTable Component
+```jsx
+// Usage example
+<DataTable
+  data={properties}
+  columns={[
+    { key: 'address', title: 'Address', sortable: true },
+    { key: 'type', title: 'Type', filterable: true },
+    { key: 'rent_amount', title: 'Rent', sortable: true, format: 'currency' }
+  ]}
+  onEdit={handleEdit}
+  onDelete={handleDelete}
+  pagination={true}
+  searchable={true}
+/>
+```
+
+### FormField Component
+```jsx
+// Usage example
+<FormField
+  label="Property Address"
+  type="text"
+  value={formData.address}
+  onChange={(value) => setFormData({...formData, address: value})}
+  required
+  validation={addressValidation}
+  placeholder="Enter property address"
+/>
+```
+
+## 🔧 API Integration
+
+### API Service Layer
+The frontend uses a centralized API service layer for backend communication:
+
+```javascript
+// api/apiService.js
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
+  timeout: 10000,
+});
+
+// Request interceptor for authentication
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor for error handling
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Handle token expiration
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+```
+
+### API Endpoints
+
+#### Authentication
+- `POST /login` - User authentication
+- `POST /register` - User registration
+- `POST /refresh-token` - Token refresh
+- `POST /logout` - User logout
+
+#### Properties
+- `GET /admin/properties` - Get all properties
+- `GET /admin/properties/:id` - Get property by ID
+- `POST /admin/properties` - Create property
+- `PUT /admin/properties/:id` - Update property
+- `DELETE /admin/properties/:id` - Delete property
+
+#### Leases
+- `GET /admin/leases` - Get all leases
+- `GET /admin/leases/:id` - Get lease by ID
+- `GET /tenant/leases` - Get tenant leases
+- `POST /admin/leases` - Create lease
+- `PUT /admin/leases/:id` - Update lease
+- `DELETE /admin/leases/:id` - Delete lease
+
+#### Maintenance
+- `GET /admin/maintenances` - Get all maintenance requests
+- `GET /admin/maintenances/:id` - Get maintenance by ID
+- `POST /admin/maintenances` - Create maintenance request
+- `PUT /admin/maintenances/:id` - Update maintenance request
+- `DELETE /admin/maintenances/:id` - Delete maintenance request
+
+#### Accounting
+- `GET /admin/accounting/invoices` - Get all invoices
+- `GET /admin/accounting/expenses` - Get all expenses
+- `POST /admin/accounting/invoices` - Create invoice
+- `POST /admin/accounting/expenses` - Create expense
+
+## 🧪 Testing
+
+### Backend Testing
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run specific test file
+go test ./tests/auth_test.go
+
+# Run with verbose output
+go test -v ./...
+```
+
+### Frontend Testing
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm test -- --coverage
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run specific test file
+npm test -- --testNamePattern="Button"
+```
+
+### Test Structure
+- **Backend**: `tests/` directory with Go test files
+- **Frontend**: `src/` directory with `.test.js` files alongside components
+
+## 📦 Build and Deployment
+
+### Backend Deployment
+```bash
+# Build binary
+go build -o bin/server cmd/main.go
+
+# Docker build
+docker build -t property-manager-backend .
+
+# Run with Docker Compose
+docker-compose up -d
+```
+
+### Frontend Deployment
+```bash
+# Build for production
+npm run build
+
+# The build folder contains optimized production files
+# Deploy to your preferred hosting service (Netlify, Vercel, etc.)
+```
+
+### Environment Variables
+
+#### Backend Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 8080 | Server port |
+| `APP_ENV` | development | Application environment |
+| `DB_HOST` | localhost | PostgreSQL host |
+| `DB_PORT` | 5432 | PostgreSQL port |
+| `DB_USER` | postgres | Database user |
+| `DB_PASSWORD` | - | Database password |
+| `DB_NAME` | property_management_db | Database name |
+| `REDIS_HOST` | localhost | Redis host |
+| `REDIS_PORT` | 6379 | Redis port |
+| `JWT_SECRET` | - | JWT signing secret |
+| `JWT_EXPIRY` | 24h | JWT token expiry |
+
+#### Frontend Environment Variables
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `REACT_APP_API_URL` | http://localhost:8080 | Backend API URL |
+| `REACT_APP_ENV` | development | Application environment |
+
+## 👥 Demo Accounts
+
+### Demo Users
+The system includes the following demo users for testing:
+
+1. **Admin User**
+   - Email: `admin@example.com`
+   - Password: `admin123`
+   - Role: Admin
+   - Access: Full system access
+
+2. **Landlord User**
+   - Email: `landlord@example.com`
+   - Password: `landlord123`
+   - Role: Landlord
+   - Access: Property and tenant management
+
+3. **Tenant User**
+   - Email: `tenant@example.com`
+   - Password: `tenant123`
+   - Role: Tenant
+   - Access: Personal information and maintenance requests
+
+4. **Maintenance Team User**
+   - Email: `maintenance@example.com`
+   - Password: `maintenance123`
+   - Role: Maintenance Team
+   - Access: Maintenance request management
+
+## 🔍 Troubleshooting
+
+### Common Frontend Issues
+
+1. **API Connection Issues**
+   - Check backend server is running on port 8080
+   - Verify REACT_APP_API_URL environment variable
+   - Check browser console for CORS errors
+
+2. **Authentication Issues**
+   - Clear localStorage and try logging in again
+   - Check JWT token expiration in browser dev tools
+   - Verify user credentials with demo accounts
+
+3. **Component Rendering Issues**
+   - Check browser console for React errors
+   - Verify all required props are passed to components
+   - Check for missing dependencies in package.json
+
+### Common Backend Issues
+
+1. **Database Connection Issues**
+   - Check PostgreSQL service status
+   - Verify connection credentials in .env file
+   - Ensure database exists and migrations are run
+
+2. **Authentication Failures**
+   - Verify JWT secret configuration
+   - Check token expiration settings
+   - Validate user credentials in database
+
+### Debug Mode
+Enable debug logging:
+
+**Backend:**
+```bash
+export LOG_LEVEL=debug
+go run cmd/main.go
+```
+
+**Frontend:**
+```bash
+REACT_APP_LOG_LEVEL=debug npm start
+```
+
+## 📖 Development Guidelines
+
+### Code Style
+- **Backend**: Follow Go naming conventions, use `gofmt`
+- **Frontend**: Follow React best practices, use ES6+ features
+- **Comments**: Add comments for public functions and complex logic
+- **Testing**: Write tests for new features and bug fixes
+
+### Git Workflow
+1. Create feature branch from main
+2. Make changes with descriptive commit messages
+3. Add tests for new functionality
+4. Create pull request with detailed description
+5. Code review and merge
+
+### Component Development
+1. Create reusable components in `src/components/common/`
+2. Use PropTypes for type checking
+3. Follow naming conventions (PascalCase for components)
+4. Add CSS modules for styling
+5. Include comprehensive documentation
+
+## 📚 API Documentation
+
+### Backend API Documentation
+- **OpenAPI/Swagger**: Available at `http://localhost:8080/swagger`
+- **Postman Collection**: Import from `docs/postman_collection.json`
+- **API Reference**: See `docs/API_DOCUMENTATION.md`
+
+### Frontend Component Documentation
+- **Storybook**: Run `npm run storybook` for component documentation
+- **PropTypes**: Component prop documentation in source files
+- **Usage Examples**: See component files for usage examples
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Setup
+1. Follow installation instructions above
+2. Make sure all tests pass
+3. Follow code style guidelines
+4. Add tests for new features
+5. Update documentation as needed
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+For support and questions:
+- **Email**: support@propertymanager.com
+- **Documentation**: [API Documentation](docs/API_DOCUMENTATION.md)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/property-manager/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/property-manager/discussions)
+
+## 🚧 Roadmap
+
+### Upcoming Features
+- [ ] Mobile app (React Native)
+- [ ] Advanced reporting and analytics
+- [ ] Document management system
+- [ ] Payment integration (Stripe/PayPal)
+- [ ] Multi-language support
+- [ ] Advanced notification system
+- [ ] API rate limiting dashboard
+- [ ] Audit trail and logging improvements
+
+### Version History
+
+#### Version 1.0.0
+- Initial release with full CRUD operations
+- Authentication system with JWT
+- Role-based access control
+- Basic dashboard functionality
+- Modern React frontend with responsive design
+
+#### Version 1.1.0 (In Progress)
+- Enhanced UI/UX with modern design system
+- Advanced data table with filtering and sorting
+- Improved form validation and error handling
+- Real-time notifications
+- Performance optimizations
+- Comprehensive testing suite
+
+## 🙏 Acknowledgments
+
+- Go community for excellent libraries and tools
+- React community for modern frontend development patterns
+- PostgreSQL for robust database management
+- Redis for efficient caching solutions
+- All contributors and users of this project

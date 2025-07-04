@@ -49,7 +49,7 @@ func GetMaintenances(c *gin.Context) {
 
 	switch userRole {
 	case "admin":
-		query = query.Preload("Reporter").Preload("Property")
+		query = query.Preload("RequestedBy").Preload("Property")
 	case "tenant":
 		leaseIDStr := c.Param("id")
 		leaseID, err := strconv.ParseUint(leaseIDStr, 10, 32)
@@ -66,9 +66,9 @@ func GetMaintenances(c *gin.Context) {
 
 		// Fetch all maintenance requests for the property tied to the lease
 		query = query.Where("property_id = ?", lease.PropertyID).
-			Preload("Property").Preload("Reporter")
+			Preload("Property").Preload("RequestedBy")
 	case "maintenanceTeam":
-		query = query.Preload("Property").Preload("Reporter")
+		query = query.Preload("Property").Preload("RequestedBy")
 	default:
 		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
 		return

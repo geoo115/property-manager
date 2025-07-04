@@ -1,0 +1,333 @@
+/* Modern Data Table Styles */
+.data-table {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+/* Table Header */
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
+  gap: var(--space-4);
+}
+
+.table-search {
+  flex: 1;
+  max-width: 320px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: var(--space-3);
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  background: var(--white);
+  transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+/* Table Cells */
+.table-cell {
+  padding: var(--space-4) var(--space-6);
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+  vertical-align: middle;
+}
+
+.table-cell--header {
+  background: var(--bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.table-cell--sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--transition-fast);
+}
+
+.table-cell--sortable:hover {
+  background: var(--bg-secondary);
+}
+
+.table-cell--checkbox {
+  width: 48px;
+  padding: var(--space-4) var(--space-4);
+}
+
+.table-cell--empty {
+  text-align: center;
+  padding: var(--space-16) var(--space-6);
+}
+
+/* Table Header Content */
+.table-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Sort Indicator */
+.sort-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: var(--space-1);
+}
+
+.sort-icon {
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.sort-icon--active {
+  color: var(--primary-color);
+}
+
+/* Table Rows */
+.table-row {
+  transition: background-color var(--transition-fast);
+}
+
+.table-row:hover {
+  background: var(--bg-tertiary);
+}
+
+.table-row--clickable {
+  cursor: pointer;
+}
+
+.table-row--selected {
+  background: var(--primary-50);
+}
+
+.table-row--selected:hover {
+  background: var(--primary-100);
+}
+
+/* Checkbox */
+.table-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Pagination */
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-tertiary);
+}
+
+.pagination-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Loading State */
+.table-loading {
+  padding: var(--space-6);
+}
+
+.table-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.skeleton-row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.skeleton-cell {
+  height: 20px;
+  background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--radius-md);
+  flex: 1;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .table-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .table-search {
+    max-width: none;
+  }
+
+  .table-cell {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .table-pagination {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+
+  .pagination-controls {
+    justify-content: center;
+  }
+
+  .pagination-info {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-cell {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
+  }
+
+  .table-cell--checkbox {
+    padding: var(--space-2);
+  }
+
+  .search-input {
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-8);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .data-table {
+    background: var(--bg-secondary);
+    border-color: var(--border-medium);
+  }
+
+  .table-cell--header {
+    background: var(--bg-tertiary);
+  }
+
+  .table-header {
+    background: var(--bg-tertiary);
+    border-color: var(--border-medium);
+  }
+
+  .table-pagination {
+    background: var(--bg-tertiary);
+    border-color: var(--border-medium);
+  }
+
+  .search-input {
+    background: var(--bg-secondary);
+    border-color: var(--border-medium);
+    color: var(--text-primary);
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .table {
+    border: 2px solid var(--text-primary);
+  }
+
+  .table-cell {
+    border-bottom-width: 2px;
+  }
+
+  .table-row:hover {
+    background: var(--primary-200);
+  }
+}

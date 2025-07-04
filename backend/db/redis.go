@@ -3,52 +3,40 @@ package db
 import (
 	"context"
 	"fmt"
-	"os"
-	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/geoo115/property-manager/config"
+	"github.com/geoo115/property-manager/logger"
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 var RedisClient *redis.Client
 var Ctx = context.Background()
 
-func InitRedis() {
+func InitRedis(cfg *config.Config) error {
 	RedisClient = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDR"), // Example: "localhost:6379"
-		Password: "",                      // No password by default
-		DB:       0,                       // Use default DB
+		Addr:     cfg.Redis.Addr,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
 	})
 
 	_, err := RedisClient.Ping(Ctx).Result()
 	if err != nil {
-		panic(fmt.Sprintf("Failed to connect to Redis: %v", err))
+		return fmt.Errorf("failed to connect to Redis: %w", err)
 	}
 
-	fmt.Println("✅ Connected to Redis")
+	logger.LogInfo("Connected to Redis", logrus.Fields{
+		"addr": cfg.Redis.Addr,
+		"db":   cfg.Redis.DB,
+	})
+
+	return nil
 }
 
-// Redis-based rate limiting middleware
-func RateLimit(limit int, duration time.Duration) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ip := c.ClientIP()
-		key := fmt.Sprintf("rate_limit:%s", ip)
-
-		current, err := RedisClient.Incr(Ctx, key).Result()
-		if err != nil {
-			c.AbortWithStatusJSON(500, gin.H{"error": "Internal error"})
-			return
-		}
-
-		if current == 1 {
-			RedisClient.Expire(Ctx, key, duration)
-		}
-
-		if current > int64(limit) {
-			c.AbortWithStatusJSON(429, gin.H{"error": "Too many requests"})
-			return
-		}
-
-		c.Next()
+// CloseRedis closes the Redis connection
+func CloseRedis() error {
+	if RedisClient != nil {
+		return RedisClient.Close()
 	}
+	return nil
 }

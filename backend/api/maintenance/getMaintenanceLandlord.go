@@ -45,7 +45,7 @@ func GetLandlordMaintenances(c *gin.Context) {
 
 	var maintenances []models.Maintenance
 	if err := db.DB.Where("property_id = ?", propertyID).
-		Preload("Reporter").Preload("Property.Owner").
+		Preload("RequestedBy").Preload("Property.Owner").
 		Find(&maintenances).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch maintenances"})
 		return

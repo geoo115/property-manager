@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/geoo115/property-manager/api/auth"
+	"github.com/geoo115/property-manager/config"
 	"github.com/geoo115/property-manager/db"
 	"github.com/geoo115/property-manager/models"
 	"github.com/geoo115/property-manager/utils"
@@ -16,8 +17,23 @@ import (
 )
 
 func TestMain(m *testing.M) {
+	// Load test configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		cfg = &config.Config{
+			Database: config.DatabaseConfig{
+				Host:     "localhost",
+				Port:     5432,
+				User:     "test",
+				Password: "test",
+				Name:     "property_manager_test",
+				SSLMode:  "disable",
+			},
+		}
+	}
+
 	// Initialize the database before running tests.
-	db.Init() // Ensure this sets db.DB properly.
+	db.Init(cfg) // Pass config to init function
 
 	// Run the tests.
 	code := m.Run()

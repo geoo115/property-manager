@@ -48,11 +48,11 @@ func CreateMaintenanceByProperty(c *gin.Context) {
 	}
 
 	maintenance := models.Maintenance{
-		ReporterID:  userID.(uint),
-		PropertyID:  uint(propertyID),
-		Description: input.Description,
-		RequestedAt: time.Now(),
-		Status:      "pending",
+		RequestedByID: userID.(uint),
+		PropertyID:    uint(propertyID),
+		Description:   input.Description,
+		RequestedAt:   time.Now(),
+		Status:        "pending",
 	}
 
 	if err := db.DB.Create(&maintenance).Error; err != nil {
@@ -60,7 +60,7 @@ func CreateMaintenanceByProperty(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.Preload("Reporter").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
+	if err := db.DB.Preload("RequestedBy").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching maintenance details"})
 		return
 	}
@@ -144,11 +144,11 @@ func CreateMaintenanceByLease(c *gin.Context) {
 	}
 
 	maintenance := models.Maintenance{
-		ReporterID:  userID.(uint),
-		PropertyID:  lease.PropertyID,
-		Description: input.Description,
-		RequestedAt: time.Now(),
-		Status:      "pending",
+		RequestedByID: userID.(uint),
+		PropertyID:    lease.PropertyID,
+		Description:   input.Description,
+		RequestedAt:   time.Now(),
+		Status:        "pending",
 	}
 
 	if err := db.DB.Create(&maintenance).Error; err != nil {
@@ -156,7 +156,7 @@ func CreateMaintenanceByLease(c *gin.Context) {
 		return
 	}
 
-	if err := db.DB.Preload("Reporter").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
+	if err := db.DB.Preload("RequestedBy").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching maintenance details"})
 		return
 	}

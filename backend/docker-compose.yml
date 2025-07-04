@@ -1,5 +1,37 @@
-version: '3'
+version: '3.8'
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-pms
+    restart: always
+    environment:
+      POSTGRES_DB: property_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_INITDB_ARGS: --auth-local=trust
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for caching and session management
+  redis:
+    image: redis:7-alpine
+    container_name: redis-pms
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Zookeeper for Kafka
   zookeeper:
     image: wurstmeister/zookeeper
     container_name: zookeeper
@@ -10,6 +42,8 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+
+  # Kafka for event streaming
   kafka:
     image: wurstmeister/kafka
     container_name: kafka
@@ -23,3 +57,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
     depends_on:
       - zookeeper
+
+volumes:
+  postgres_data:
+  redis_data:

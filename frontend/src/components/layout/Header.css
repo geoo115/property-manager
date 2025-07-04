@@ -1,0 +1,96 @@
+/* Simplified Header Styles */
+.header {
+  height: 72px;
+  background: linear-gradient(135deg, 
+    rgba(30, 41, 59, 0.95) 0%, 
+    rgba(15, 23, 42, 0.95) 50%, 
+    rgba(2, 6, 23, 0.95) 100%
+  );
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.15),
+    0 8px 32px rgba(59, 130, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 100;
+  backdrop-filter: blur(16px) saturate(180%);
+  transition: all 0.3s ease;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.1) 0%, 
+    transparent 50%, 
+    rgba(16, 185, 129, 0.1) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(59, 130, 246, 0.6) 50%, 
+    transparent 100%
+  );
+  z-index: 2;
+}
+
+/* DateTime Display */
+.header__datetime {
+  position: relative;
+  z-index: 3;
+}
+
+.header__datetime-text {
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: pre-line;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Actions Section */
+.header__actions {
+  position: relative;
+  z-index: 3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 1rem;
+  }
+  
+  .header__datetime-text {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    height: 64px;
+    padding: 0 0.75rem;
+  }
+  
+  .header__datetime-text {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+}

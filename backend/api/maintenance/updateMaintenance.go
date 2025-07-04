@@ -48,7 +48,7 @@ func UpdateMaintenance(c *gin.Context) {
 	}
 
 	// Reload with associations
-	if err := db.DB.Preload("Reporter").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
+	if err := db.DB.Preload("RequestedBy").Preload("Property.Owner").First(&maintenance, maintenance.ID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error fetching updated details"})
 		return
 	}

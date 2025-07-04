@@ -1,0 +1,122 @@
+/* Modern Property Management System - Global Styles */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* Global Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+code {
+  font-family: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Focus management for accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Scroll bar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-dark);
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--primary-200);
+  color: var(--primary-900);
+}
+
+/* Root element */
+#root {
+  height: 100%;
+}
+
+/* Enhanced Color Variables for Modern Sidebar */
+:root {
+  /* Primary colors - Blue gradient theme */
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-light: rgba(59, 130, 246, 0.1);
+  
+  /* Secondary colors - Green accents */
+  --color-secondary: #10b981;
+  --color-secondary-dark: #059669;
+  --color-secondary-light: rgba(16, 185, 129, 0.1);
+  
+  /* Sidebar specific colors */
+  --sidebar-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --sidebar-text: #f8fafc;
+  --sidebar-text-secondary: #cbd5e1;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-border: rgba(148, 163, 184, 0.2);
+  --sidebar-hover: rgba(59, 130, 246, 0.15);
+  --sidebar-active: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  
+  /* Header specific colors */
+  --header-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 50%, rgba(241, 245, 249, 0.95) 100%);
+  --header-border: rgba(203, 213, 225, 0.3);
+  --header-text: #1e293b;
+  --header-text-secondary: #64748b;
+  --header-accent: rgba(59, 130, 246, 0.1);
+  --header-accent-hover: rgba(59, 130, 246, 0.15);
+  --header-glow: rgba(59, 130, 246, 0.25);
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sidebar-bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+    --sidebar-border: rgba(148, 163, 184, 0.1);
+    
+    /* Dark mode header colors */
+    --header-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.95) 50%, rgba(0, 0, 0, 0.95) 100%);
+    --header-border: rgba(148, 163, 184, 0.2);
+    --header-text: #f8fafc;
+    --header-text-secondary: #cbd5e1;
+    --header-accent: rgba(59, 130, 246, 0.15);
+    --header-accent-hover: rgba(59, 130, 246, 0.25);
+    --header-glow: rgba(59, 130, 246, 0.3);
+  }
+}
